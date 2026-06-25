@@ -25,6 +25,23 @@ If a project already has a stack, read the config files (`package.json`, `Podfil
 - CI/CD via GitHub Actions connected to EAS from day 0. Builds and OTA updates must be automated from the first commit — never "we'll add CI later."
 - All backend services must be hosted on Google Cloud Run. No other compute provider unless there's a specific technical reason.
 
+## CI/CD & OTA Discipline (EAS / Expo) — non-negotiable
+
+These rules exist because we lost real time when the *deployed* app silently stopped matching `main` (an OTA shipped from a dirty working clone; a CD workflow that watched a branch nobody merged into; OTAs that bundled `undefined` env). Treat them as hard rules.
+
+- **`main` is the only source of truth AND the only deploy source.** Develop on short-lived branches off `main` → PR → merge to `main`. Never let a long-lived feature branch or a working clone become the de-facto trunk.
+- **Never run `eas update` / `eas build` from a dirty working tree or a feature branch.** An OTA inlines whatever is checked out — including *uncommitted* code — so the deployed app stops matching any commit and is unreproducible. Ship from a clean `main` checkout, via CI wherever possible.
+- **The CD/auto-OTA workflow must trigger on the branch the team actually merges into** (`main`). If the integration branch changes, change the trigger — otherwise it silently never fires.
+- **A green CI run is not proof of a ship.** A "skip / build-required" classification ships nothing. Verify the EAS step actually ran and published.
+- **`EXPO_PUBLIC_*` vars are inlined at build/update time, and `eas update` does NOT read `eas.json` build `env`.** The OTA job must load the same env (from `eas.json` or secrets) or the bundle ships `undefined` for backend URLs, API keys, RevenueCat keys, etc. — breaking the app on the next OTA.
+- **Give critical runtime config a hardcoded fallback in code** (`process.env.X || '<known-good-prod-value>'`) so a missing/empty env can never brick the app. Never let a local-only `.env` be the *only* place the real value lives.
+- **Classify every change before shipping:** JS/TS only → OTA (`eas update`); native/config (`app.json`, `eas.json`, deps/lockfile, `ios/`, `android/`, `google-services`) → new **build** + submit, never an OTA.
+- **`runtimeVersion` gates OTA delivery.** Keep it for JS-only changes (OTA-compatible); bump it + rebuild for native changes. An OTA only reaches builds with a matching `runtimeVersion`.
+- **OTA does NOT change the native `version` / `buildNumber` / `versionCode`** — never use the version string to judge whether an OTA applied. Use `expo-updates` `updateId` / `isEmbeddedLaunch`. Bump `versionCode` (Android) + `buildNumber` (iOS) on every store build.
+- **Verify what's actually deployed, not what you assume.** Confirm the live `updateId` (`eas update:list` / EAS dashboard / in-app), that it was built from the expected commit, and — for real confidence — that a device *ran* the new code (e.g. a code-only marker such as a GA4 user property set only in the new bundle), not merely that it published.
+- **Ship an in-app debug surface** (long-press the version row → `updateId`, `channel`, `runtimeVersion`, `isEmbeddedLaunch`, + "force update") so OTA state is verifiable in the field without adb/Metro.
+- **Back up signing credentials off-machine.** The Android upload keystore + `credentials.json` stay gitignored (never commit) but a lost keystore is unrecoverable — document where they live; a fresh clone won't have them.
+
 ## Code Architecture
 
 - Keep business logic out of UI components. Extract to hooks, services, or pure utility functions.
