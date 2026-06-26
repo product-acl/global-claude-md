@@ -73,6 +73,7 @@ These rules exist because we lost real time when the *deployed* app silently sto
 - Every button must fire a `button_tap` event with the button name as a parameter.
 - Every screen must fire a `screen_rendered` event with the screen name as a parameter.
 - Onboarding flows must fire `onboarding_started` and `onboarding_finished` events.
+- The paywall view event must always carry a `screen_name` parameter identifying the screen it was shown from (e.g. `home`, `settings`, `scan`, `session_limit`). A bare paywall-view event is useless — you can't tell which surface drives paywall impressions (or which converts), so never fire one without it.
 - Wire these events during implementation, not as a follow-up task. No screen, button, or flow ships without them.
 - Always install and configure the Meta (Facebook) SDK. Send `install` and `purchase` events back to Meta for ad attribution. This is non-negotiable — without it, campaign optimization is blind.
 
