@@ -77,6 +77,17 @@ These rules exist because we lost real time when the *deployed* app silently sto
 - Wire these events during implementation, not as a follow-up task. No screen, button, or flow ships without them.
 - Always install and configure the Meta (Facebook) SDK. Send `install` and `purchase` events back to Meta for ad attribution. This is non-negotiable — without it, campaign optimization is blind.
 
+## Growth Hypotheses & Experimentation
+
+When forming any growth/product hypothesis (why a metric or behavior is what it is), follow this discipline. For the full guided workflow, run `/hypothesis`.
+
+- **A hypothesis is a falsifiable causal claim, NOT a solution.** "Move the paywall to the end screen" is a *solution*; the hypothesis is "asking for payment before the user experiences value suppresses conversion." Write the belief about *why*, not the action to take.
+- **Make it specific + testable + falsifiable:** name the independent variable, the dependent variable (metric), the direction, and the population — plus a measurable prediction the data could prove wrong. Template: *"[users] who [condition/intervention] show [higher/lower] [metric] than [comparison], because [mechanism]."*
+- **Ground the mechanism in code/data BEFORE asserting it.** Trace the causal path (read the code, query the events). Separate what's PROVEN (logged events, traced code) from what's INFERRED. Confirm the data is real users, not your own test devices.
+- **Calibrate against noise — don't over-attribute.** 0 conversions from a small denominator is the *expected* outcome, not "broken." Correlation ≠ causation. State competing explanations and what the data can/can't distinguish; check counter-evidence before blaming a cause.
+- **Keep Problem → Hypothesis → Experiment separate.** The ticket holds the observation + the claim; the solution (what to build) is defined later, not baked into the claim.
+- **Every hypothesis carries:** a stable id, IV/DV + direction, the prediction + success threshold + by-when, the grounding evidence, and a confidence scaled to sample size + source reliability.
+
 ## Monetization
 
 - Always use RevenueCat for paywalls and subscription management. No custom payment logic.

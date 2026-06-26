@@ -26,3 +26,4 @@ gh api repos/product-acl/global-claude-md/pages \
 echo ""
 echo "Done! Live at: https://product-acl.github.io/global-claude-md/"
 echo "Symlink to Claude Code: ln -sf $(pwd)/CLAUDE.md ~/.claude/CLAUDE.md"
+echo "Symlink the hypothesis skill: mkdir -p ~/.claude/skills/hypothesis && ln -sf $(pwd)/skills/hypothesis/SKILL.md ~/.claude/skills/hypothesis/SKILL.md"
